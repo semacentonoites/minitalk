@@ -1,83 +1,82 @@
-/*
-vou ter que enviar caracter a caracter, bit a bit. Ou seja, por cada caracter que mandar, vou ter que mandar 8 signals,, no outro vou ler os signals 
-e dar um carcater 
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   client.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: erferrei <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/16 15:57:54 by erferrei          #+#    #+#             */
+/*   Updated: 2024/07/16 15:57:56 by erferrei         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-*/
 #include <stdio.h>
 #include <signal.h>
 #include <unistd.h>
-#include <stdlib.h>/*
+#include <stdlib.h>
+#include "libft.h"
+
 void	send(int pid, char c)
 {
-	//entao c pode ser escrito em binario 
-	//	ou seja
-	//	c -> 8 caratceres na realidade, trabaçhamos com eles atraves de bitwise operators
-	//	quero mandar SIG1 quando e 1 e seg2 quando é 
-	int i;
-	int f;
+	char	f;
+	int		i;
 
 	i = 8;
 	while (i > 0)
 	{
-
 		f = c;
-			//printf("entered while");
 		f = f >> (i - 1);
-		printf("f = %d\n", f);
 		if (f & 1)
 		{
-			printf("sent 1\n");
 			kill(pid, SIGUSR1);
-			sleep(1);
+			usleep(400);
 		}
 		else
 		{
-			printf("sent 0\n");
 			kill(pid, SIGUSR2);
-			sleep(1);
+			usleep(400);
 		}
 		i--;
 	}
 }
-*/
 
-void	send_bit(int pid, char i)
+int	ft_allnum(char *str)
 {
-	int	bit;
+	int	i;
 
-	bit = 0;
-	while (bit < 8)
+	i = 0;
+	while (str[i])
 	{
-		if ((i & (0x01 << bit)) != 0)
-			kill(pid, SIGUSR1);
-		else
-			kill(pid, SIGUSR2);
-		usleep(100);
-		bit++;
+		if (str[i] < '0' || str[i] > '9')
+			return (0);
+		i++;
 	}
+	return (1);
 }
-
 
 int	main(int ac, char **av)
 {
+	int	pid;
+	int	i;
+
 	if (ac == 3)
 	{
-		int	pid;
-		int	i;
-		//char	*str;
 		i = 0;
-		pid = atoi(av[1]); //manage errors
-		//str =  av[2];
-		printf("%d\n", pid);
+		if (ft_allnum(av[1]))
+			pid = ft_atoi(av[1]);
+		else
+		{
+			printf("Invalid PID argument\n");
+			return (0);
+		}
 		while (av[2][i])
 		{
-			send_bit(pid, av[2][i]);
+			send(pid, av[2][i]);
 			i++;
-		}			
+		}
+		send(pid, av[2][i]);
 	}
 	else
-	{
-		printf("Mensagem de erro\n");
-	}
+		printf("Incorrect number of arguments\n./client [PID] [message]\n");
 	return (0);
 }
